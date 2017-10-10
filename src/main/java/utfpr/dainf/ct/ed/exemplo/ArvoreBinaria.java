@@ -1,8 +1,17 @@
 package utfpr.dainf.ct.ed.exemplo;
 
-import java.util.*;
 import java.util.Stack;
+import java.util.LinkedList;
 
+
+/**
+ * UTFPR - Universidade Tecnológica Federal do Paraná
+ * DAINF - Departamento Acadêmico de Informática
+ * 
+ * Exemplo de implementação de árvore binária.
+ * @author Wilson Horstmeyer Bogado <wilson@utfpr.edu.br>
+ * @param <E> O tipo do valor armazenado nos nós na árvore
+ */
 public class ArvoreBinaria<E> {
     
     private E dado;
@@ -12,7 +21,8 @@ public class ArvoreBinaria<E> {
     // para percurso iterativo
     private boolean inicio = true;
     private Stack<ArvoreBinaria<E>> pilha;
-    private LinkedList<ArvoreBinaria<E>> lista;
+    private LinkedList<ArvoreBinaria<E>> fila;
+    private Stack<ArvoreBinaria<E>> pilha2;
     private ArvoreBinaria<E> ultimoVisitado;
 
     /**
@@ -21,6 +31,10 @@ public class ArvoreBinaria<E> {
     public ArvoreBinaria() {
     }
 
+    /**
+     * Cria uma árvore binária com dado {@code dado} na raiz.
+     * @param valor O dado do nó raiz
+     */
     public ArvoreBinaria(E dado) {
         this.dado = dado;
     }
@@ -72,26 +86,6 @@ public class ArvoreBinaria<E> {
         }
     }
     
-    public void visitaPreOrdem(ArvoreBinaria<E> raiz)
-    {
-        if (raiz != null)
-        {
-            visita(raiz);
-            ArvoreBinaria.this.visitaPreOrdem(raiz.esquerda);
-            ArvoreBinaria.this.visitaPreOrdem(raiz.direita);
-        }
-    }
-    
-    public void visitaPosOrdem(ArvoreBinaria<E> raiz)
-    {
-        if (raiz != null)
-        {
-            ArvoreBinaria.this.visitaPosOrdem(raiz.esquerda);
-            ArvoreBinaria.this.visitaPosOrdem(raiz.direita);
-            visita(raiz);
-        }
-    }
-    
     /**
      * Visita os nós da árvore em-ordem a partir da raiz.
      */
@@ -99,25 +93,51 @@ public class ArvoreBinaria<E> {
         visitaEmOrdem(this);
     }
     
-    public void visitaPreOrdem()
-    {
+    public void visitaPreOrdem(ArvoreBinaria<E> raiz) {
+    if (raiz != null) {
+        visita(raiz);
+        ArvoreBinaria.this.visitaPreOrdem(raiz.esquerda);
+        ArvoreBinaria.this.visitaPreOrdem(raiz.direita);
+        }
+    }
+    
+    /**
+     * Visita os nós da árvore em-ordem a partir da raiz.
+     */
+    public void visitaPreOrdem() {
         visitaPreOrdem(this);
     }
     
-    public void visitaPosOrdem()
-    {
-        visitaPosOrdem(this);
+    public void visitaPosOrdem(ArvoreBinaria<E> raiz) {
+    if (raiz != null) {
+        ArvoreBinaria.this.visitaPosOrdem(raiz.esquerda);
+        ArvoreBinaria.this.visitaPosOrdem(raiz.direita);
+        visita(raiz);
+        }
     }
     
+    /**
+     * Visita os nós da árvore em-ordem a partir da raiz.
+     */
+    public void visitaPosOrdem() {
+        visitaPosOrdem(this);
+    }
+
+    public void setInicioTrue(){
+        inicio = true;
+    }
+
     private void inicializaPilha() {
         if (pilha == null) {
             pilha = new Stack<>();
         }
     }
     
-    private void inicializaLista() {
-        lista = new LinkedList<>();
-        lista.clear();
+    private void inicializaPilha2() {
+        if (pilha2 == null) {
+            pilha2 = new Stack<>();
+        }
+        pilha2.clear();
     }
     
     /**
@@ -127,7 +147,6 @@ public class ArvoreBinaria<E> {
      */
     public void reinicia() {
         inicializaPilha();
-        inicializaLista();
         pilha.clear();
         ultimoVisitado = this;
         inicio = true;
@@ -137,9 +156,8 @@ public class ArvoreBinaria<E> {
      * Retorna o dado do próximo nó em-ordem.
      * @return O dado do próximo nó em-ordem.
      */
-   
     public ArvoreBinaria<E> proximoEmOrdem() {
-        ArvoreBinaria<E> resultado = null; 
+        ArvoreBinaria<E> resultado = null;
         if (inicio) {
             reinicia();
             inicio = false;
@@ -153,13 +171,9 @@ public class ArvoreBinaria<E> {
             resultado = ultimoVisitado;
             ultimoVisitado = ultimoVisitado.direita;
         }
-        else
-        {
-            inicio = true;
-        }
         return resultado;
     }
-    
+
     public ArvoreBinaria<E> proximoPreOrdem() {
         ArvoreBinaria<E> resultado = null;
         if (inicio) {
@@ -167,82 +181,63 @@ public class ArvoreBinaria<E> {
             inicio = false;
             pilha.push(ultimoVisitado);
         }
-        if (!pilha.isEmpty() && ultimoVisitado != null)
+        if (!pilha.isEmpty() || ultimoVisitado != null) 
         {
             ultimoVisitado = pilha.pop();
+            while(ultimoVisitado == null && !pilha.isEmpty()){
+                ultimoVisitado = pilha.pop();
+            }
+            if(ultimoVisitado != null){
+                pilha.push(ultimoVisitado.direita);
+                pilha.push(ultimoVisitado.esquerda);
+            }
             resultado = ultimoVisitado;
-            if(ultimoVisitado.direita != null)
-            {
-                pilha.push(ultimoVisitado.getDireita());
-            }
-            if(ultimoVisitado.esquerda != null)
-            {
-                pilha.push(ultimoVisitado.getEsquerda());
-            }
-        }
-        else
-        {
-            inicio = true;
         }
         return resultado;
     }
-
-    public ArvoreBinaria<E> proximoPosOrdem() 
-    { 
-        ArvoreBinaria<E> resultado = null;
-        if(inicio)
-        {
-            reinicia();
-            Stack<ArvoreBinaria<E>> Stackaux;
-
-            Stackaux = new Stack<>();
-            Stackaux.push(this);
-
-            while (!Stackaux.isEmpty()) 
-            {
-                ArvoreBinaria<E> temp = Stackaux.pop();
-                pilha.push(temp);
-                if (temp.esquerda != null)
-                    Stackaux.push(temp.getEsquerda());
-                if (temp.direita != null)
-                    Stackaux.push(temp.getDireita());
-            }
-            inicio = false;
-        }
-        
-        if(!pilha.isEmpty())
-            resultado = pilha.pop();
-        else
-            inicio = true;
-        
-        return resultado;
-    }    
     
-    public ArvoreBinaria<E> proximoEmNivel() 
-    {
-        if(inicio)
-        {
+    
+    
+    public ArvoreBinaria<E> proximoPosOrdem() {
+        ArvoreBinaria<E> resultado = null;
+        if (inicio) {
             reinicia();
-            inicio = false;
-            lista.add(ultimoVisitado);
+            inicializaPilha2();
+            inicio = false; 
+            pilha.push(ultimoVisitado);
         }
-        
-        ArvoreBinaria<E> resultado = ultimoVisitado;
-        
-        if(!lista.isEmpty() && ultimoVisitado != null)
-        {
-            if (ultimoVisitado.esquerda != null) 
-                lista.add(ultimoVisitado.getEsquerda());
-            if (ultimoVisitado.direita != null) 
-                lista.add(ultimoVisitado.getDireita());
-            if (lista.size() != 1)
-                ultimoVisitado = lista.get(1);
-            lista.removeFirst();
+        while(!pilha.isEmpty()){
+            ultimoVisitado = pilha.pop();
+            if(ultimoVisitado.esquerda != null){
+                pilha.push(ultimoVisitado.esquerda);
+            }
+            if(ultimoVisitado.direita != null){
+                pilha.push(ultimoVisitado.direita);
+            }
+            pilha2.push(ultimoVisitado);
         }
-        else
-            resultado = null;
-        
-        return resultado;
+        if(!pilha2.isEmpty()){
+            return(pilha2.pop());
+        }
+        return null;
+    }
+    
+    public ArvoreBinaria<E> proximoEmNivel() {
+        if (inicio) {
+            reinicia();
+            inicializaPilha2();
+            inicio = false; 
+            fila = new LinkedList<>();
+            fila.add(ultimoVisitado);
+        }
+        ArvoreBinaria<E> resultado = null;
+        if(!fila.isEmpty()) {
+            ultimoVisitado = fila.remove();
+            resultado = ultimoVisitado;
+            if(ultimoVisitado.esquerda != null) fila.add(ultimoVisitado.esquerda);
+            if(ultimoVisitado.direita != null) fila.add(ultimoVisitado.direita);
+        }
+    return(resultado);
     }
     
     /**
